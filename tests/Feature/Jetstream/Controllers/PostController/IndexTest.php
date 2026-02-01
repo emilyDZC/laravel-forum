@@ -13,9 +13,7 @@ it('should return the correct component', function () {
     $posts = Post::factory(3)->create();
 
     get(route('posts.index'))
-         ->assertInertia(fn (AssertableInertia $inertia) =>
-             $inertia->component('Posts/Index', true)
-         );
+         ->assertComponent('Posts/Index');
 });
 
 it('passes posts to the view', function () {
@@ -26,9 +24,10 @@ it('passes posts to the view', function () {
     $posts = Post::factory(3)->create();
 
     get(route('posts.index'))
-         ->assertInertia(fn (AssertableInertia $inertia) =>
-             $inertia
-                ->hasResource('post', PostResource::make($posts->first()))
-                ->hasPaginatedResource('posts', PostResource::collection($posts->reverse()))
-         );
+        ->assertHasPaginatedResource('posts', PostResource::collection($posts->reverse()));
+        //  ->assertInertia(fn (AssertableInertia $inertia) =>
+        //      $inertia
+        //         ->hasResource('post', PostResource::make($posts->first()))
+        //         ->hasPaginatedResource('posts', PostResource::collection($posts->reverse()))
+        //  );
 });
