@@ -1,8 +1,8 @@
 <template>
   <div class="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
     <div class="flex flex-1 justify-between sm:hidden">
-      <Link :href="previousUrl" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</Link>
-      <Link :href="nextUrl" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</Link>
+      <Link v-if="previousUrl" :href="previousUrl" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</Link>
+      <Link v-if="nextUrl" :href="nextUrl" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</Link>
     </div>
     <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
       <div>
@@ -32,16 +32,18 @@
             }"
             v-html="meta.links[0].label"
             ></Link> -->
-          <a v-for="link in meta.links" :key="link.label" 
-            :href="link.url"
-            class="relative inline-flex items-center first-of-type:rounded-l-md last-of-type:rounded-r-md px-3 py-2 text-gray-400 inset-ring inset-ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-            :class="{
-                'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600': link.active,
-                'text-gray-900 inset-ring inset-ring-gray-300 hover:bg-gray-50 focus:outline-offset-0': !link.active
-            }"
-            v-html="link.label"
-            >
-          </a>
+            <template v-for="link in meta.links" :key="link.label" >
+              <Link v-if="link.url"
+                :href="link.url"
+                class="relative inline-flex items-center first-of-type:rounded-l-md last-of-type:rounded-r-md px-3 py-2 text-gray-400 inset-ring inset-ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                :class="{
+                    'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600': link.active,
+                    'text-gray-900 inset-ring inset-ring-gray-300 hover:bg-gray-50 focus:outline-offset-0': !link.active
+                }"
+                v-html="link.label"
+                >
+              </Link>
+            </template>
         </nav>
       </div>
     </div>
