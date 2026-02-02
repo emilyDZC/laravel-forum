@@ -1,6 +1,7 @@
 <?php
 
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use Inertia\Testing\AssertableInertia;
 use App\Models\User;
 use App\Models\Post;
@@ -8,6 +9,11 @@ use App\Models\Comment;
 use App\Http\Resources\PostResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+
+it('requires authentication', function () {
+    post(route('posts.comments.store', Post::factory()->create()))
+        ->assertRedirect(route('login'));
+});
 
 it('can store a comment', function () {
     $user = User::factory()->create();
