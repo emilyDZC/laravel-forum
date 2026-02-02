@@ -68,6 +68,8 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
-        //
+        $comment->delete();
+
+        return to_route('posts.show', $comment->post_id);
     }
 }
