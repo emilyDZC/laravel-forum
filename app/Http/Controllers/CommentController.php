@@ -2,26 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Routing\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Models\Post;
+use Illuminate\Support\Facades\Gate;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    use AuthorizesRequests;
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function __construct()
     {
-        //
+        $this->authorizeResource(Comment::class);
     }
 
     /**
@@ -36,23 +30,8 @@ class CommentController extends Controller
             ->post()->associate($post)
             ->save();
 
-        return to_route('posts.show', $post);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Comment $comment)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Comment $comment)
-    {
-        //
+        return to_route('posts.show', $post)
+            ->banner('Comment added.');
     }
 
     /**
@@ -60,7 +39,12 @@ class CommentController extends Controller
      */
     public function update(Request $request, Comment $comment)
     {
-        //
+        $data = $request->validate(['body' => ['required', 'string', 'max:2500']]);
+
+        $comment->update($data);
+
+        return to_route('posts.show', ['post' => $comment->post_id, 'page' => $request->query('page')])
+            ->banner('Comment updated.');
     }
 
     /**
@@ -68,12 +52,9 @@ class CommentController extends Controller
      */
     public function destroy(Request $request, Comment $comment)
     {
-        if ($request->user()->id !== $comment->user_id) {
-            abort(403);
-        }
-
         $comment->delete();
 
-        return to_route('posts.show', $comment->post_id);
+        return to_route('posts.show', ['post' => $comment->post_id, 'page' => $request->query('page')])
+            ->banner('Comment deleted.');
     }
 }

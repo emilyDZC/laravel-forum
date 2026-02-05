@@ -10,19 +10,19 @@
         <div class="mt-12">
             <h2 class="text-xl font-semibold">Comments</h2>
 
-            <form v-if="$page.props.auth.user" @submit.prevent="addComment" class="mt-4">
+            <form v-if="$page.props.auth.user" @submit.prevent="() => commentIdBeingEdited ? updateComment() : addComment()" class="mt-4">
                 <div>
                     <InputLabel for="body" class="sr-only">Comment</InputLabel>
-                    <TextArea id="body" v-model="commentForm.body" rows="4" placeholder="Your words of wisdom..."></TextArea>
+                    <TextArea ref="commentTextAreaRef" id="body" v-model="commentForm.body" rows="4" placeholder="Your words of wisdom..."></TextArea>
                     <InputError :message="commentForm.errors.body" class="mt-1"></InputError>
                 </div>
-
-                <PrimaryButton type="submit" class="mt-3" :disabled="commentForm.processing">Add Comment</PrimaryButton>
+                <PrimaryButton type="submit" class="mt-3" :disabled="commentForm.processing">{{ buttonText }}</PrimaryButton>
+                <SecondaryButton v-if="commentIdBeingEdited" @click="cancelEditComment" class="ml-2">Cancel</SecondaryButton>
             </form>
 
             <ul class="divide-y mt-4">
                 <li v-for="comment in comments.data" :key="comment.id" class="px-2 py-4">
-                    <Comment :comment="comment" />
+                    <Comment @edit="editComment" @delete="deleteComment" :comment="comment" />
                 </li>
             </ul>
 
@@ -42,9 +42,12 @@ import TextArea from '@/Components/TextArea.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import InputError from '@/Components/InputError.vue'
 import PrimaryButton from '@/Components/PrimaryButton.vue'
-import { computed } from 'vue'
+import SecondaryButton from '@/Components/SecondaryButton.vue'
+import { computed, ref } from 'vue'
 import { relativeDate } from '@/Utilities/date'
 import { useForm } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
+import { useConfirm } from '@/Utilities/Composables/useConfirm.js'
 
 const props = defineProps(['post', 'comments']);
 
@@ -52,10 +55,55 @@ const commentForm = useForm({
     body: '',
 });
 
+const commentTextAreaRef = ref(null);
+const commentIdBeingEdited = ref(null);
+
+const commentBeingEdited = computed(() => props.comments.data.find(comment => comment.id  === commentIdBeingEdited.value))
+
+const buttonText = computed(() => commentIdBeingEdited.value ? 'Update Comment' : 'Add Comment')
+
+const editComment = (commentId) => {
+    commentIdBeingEdited.value = commentId;
+    commentForm.body = commentBeingEdited.value?.body;
+    commentTextAreaRef.value?.focus();
+}
+
+const cancelEditComment = (commentId) => {
+    commentIdBeingEdited.value = null;
+    commentForm.reset();
+}
+
 const addComment = () => commentForm.post(route('posts.comments.store', props.post.id), {
     preserveScroll: true,
     onSuccess: () => commentForm.reset()
 })
+
+const { confirmation } = useConfirm();
+
+const updateComment = async () => {
+    if (! await confirmation('Are you sure you want to update this comment?')) {
+        commentTextAreaRef.value?.focus();
+        return;
+    }
+
+    commentForm.put(route('comments.update', {
+        comment: commentIdBeingEdited.value,
+        page: props.comments.meta.current_page
+    }), {
+        preserveScroll: true,
+        onSuccess: cancelEditComment,
+    })
+}
+
+const deleteComment = async (commentId) => {
+    if (! await confirmation('Are you sure you want to delete this comment?')) {
+        return;
+    }
+
+    router.delete(route('comments.destroy', {comment: commentId, page: props.comments.meta.current_page}), {
+        preserveScroll: true
+    })
+}
 
 </script>
 
