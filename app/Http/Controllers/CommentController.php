@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+// For some reason, this different version of the controller needs to be imported
 use Illuminate\Routing\Controller;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\Comment;
