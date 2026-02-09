@@ -2,13 +2,24 @@
 
 namespace App\Http\Controllers;
 
+// For some reason, this different version of the controller needs to be imported
+use Illuminate\Routing\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\CommentResource;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(Post::class);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -24,7 +35,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return inertia('Posts/Create');
     }
 
     /**
@@ -32,7 +43,26 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'title' => ['required', 'string', 'min:10', 'max:120'],
+            'body' => ['required', 'string', 'min:20', 'max:10000'],
+        ]);
+
+        // ---------------------------------------
+        // PREVIOUS VERSION - WORKS WITHOUT Model::unguard()
+        // $post = Post::make($data);
+
+        // $post->user()->associate($request->user())
+        //     ->save();
+        // ---------------------------------------
+
+        // Needed to add Model::unguard() in AppServiceProvider for this to work
+        $post = Post::create([
+            ...$data,
+            'user_id' => $request->user()->id,
+        ]);
+
+        return to_route('posts.show', $post);
     }
 
     /**
