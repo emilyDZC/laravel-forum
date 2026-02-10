@@ -10,6 +10,7 @@ use App\Http\Resources\PostResource;
 use App\Http\Resources\CommentResource;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -62,14 +63,19 @@ class PostController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        return to_route('posts.show', $post);
+        return redirect($post->showRoute());
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
+        // This ensures that if someone visits a page with an outdated slug, they are redirected to the correct page with the new slug
+        if (!Str::contains($post->showRoute(), $request->path())) {
+            return redirect($post->showRoute($request->query()));
+        }
+
         $post->load('user');
 
         return inertia('Posts/Show', [
