@@ -26,5 +26,9 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading();
 
         Model::unguard();
+
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
