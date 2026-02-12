@@ -13,7 +13,8 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Post;
 use App\Models\Comment;
 
-class User extends Authenticatable implements MustVerifyEmail
+// class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     use HasApiTokens;
 
